@@ -1,0 +1,60 @@
+<?php
+
+function phone_send_schema() {
+  $schema = array();
+  $schema['phone_send_record'] = array(
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'phone' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+      ),
+      'message' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'result' => array(
+        'type' => 'text',
+        'size' => 'medium',
+        'translatable' => TRUE
+      ),
+      'time_begin' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'time_end' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'service' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE
+      ),
+      'mode' => array(
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+        'default' => 'duly'//delay
+      ),
+      'status' => array(
+        'type' => 'varchar',
+        'length' => 10,
+        'default' => 'unsent'
+      ),
+      'success' => array(
+        'type' => 'int',
+        'default' => 0
+      )
+    ),
+    'primary key' => array('id')
+  );
+  return $schema;
+}

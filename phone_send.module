@@ -1,0 +1,221 @@
+<?php
+
+function phone_send_menu() {
+  $menus = array();
+  $menus['admin/config/system/phone-send'] = array(
+    'title' => t('Phone Send Settings'),
+    'description' => t('Settings the Phone Send'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('phone_send_settings'),
+    'access arguments' => array('phone send settings'),
+    'file' => 'phone_send.admin.inc',
+  );
+  $menus['admin/config/system/phone-send/%phone_send_service'] = array(
+    'title' => t('Phone Send Settings '),
+    'description' => t('Settings the Phone Send'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('phone_send_service_settings'),
+    'access arguments' => array('phone send settings'),
+    'file' => 'phone_send.admin.inc',
+  );
+  $menus['admin/phone-send'] = array(
+    'title' => t('Phone Send List'),
+    'page callback' => '',
+    'page arguments' => array(),
+    'access arguments' => array('administer phone send'),
+    'file' => 'phone_send.admin.inc'
+  );
+  $menus['phone-send'] = array(
+    'title' => t('Phone Send'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('phone_send_form'),
+    'access arguments' => array('phone send message'),
+    'file' => 'phone_send.page.inc'
+  );
+  return $menus;
+}
+
+function phone_send($phone, $message, $sid = NULL) {
+  $phoneSend = _phone_send_class($sid);
+  return $phoneSend->send($phone, $message);
+}
+
+function phone_send_verify($phone, $sid = NULL) {
+  $phoneSend = _phone_send_class($sid);
+  return $phoneSend->verify($phone);
+}
+
+function phone_send_service_load($name) {
+  $service = phone_send_service($name);
+  if (empty($service)) {
+    $service = phone_send_service_default();
+  }
+  return $service;
+}
+
+/**
+ * Implements hook_entity_info().
+ */
+function phone_send_entity_info() {
+  $info = array();
+  $info['phone_send_record'] = array(
+    'label' => t('Phone Send Record'),
+    'base table' => 'phone_send_record',
+    'entity keys' => array(
+      'id' => 'id',
+      'label' => 'id',
+    ),
+    'bundles' => array(),
+    'entity class' => 'PhoneSendRecordEntity',
+    'controller class' => 'PhoneSendRecordController',
+    'metadata controller class' => '',
+    'fieldable' => TRUE,
+    'uri callback' => 'entity_class_uri',
+    'module' => 'code',
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_entity_property_info().
+ */
+function phone_send_entity_property_info() {
+  $info = array();
+  $info['phone_send_record'] = array(
+    'properties' => array(
+      'id' => array(
+        'type' => 'integer',
+        'schema field' => 'id',
+        'label' => t('ID'),
+        'description' => t('ID'),
+        'setter callback' => 'entity_property_verbatim_set',
+      ),
+      'service' => array(
+        'type' => 'varchar',
+        'schema field' => 'service',
+        'label' => t('Phone Send Service'),
+        'description' => t('Phone Send Service'),
+        'setter callback' => 'entity_property_verbatim_set',
+      ),
+      'phone' => array(
+        'type' => 'varchar',
+        'schema field' => 'phone',
+        'label' => t('Phone Send Number'),
+        'description' => t('Phone Send Number'),
+        'setter callback' => 'entity_property_verbatim_set',
+      ),
+      'message' => array(
+        'type' => 'text',
+        'schema field' => 'message',
+        'label' => t('Phone Send Message'),
+        'description' => t('Phone Send Message'),
+        'setter callback' => 'entity_property_verbatim_set',
+      ),
+      'result' => array(
+        'type' => 'text',
+        'schema field' => 'result',
+        'label' => t('Phone Send Result'),
+        'description' => t('Phone Send Result'),
+        'setter callback' => 'entity_property_verbatim_set',
+      ),
+      'status' => array(
+        'type' => 'integer',
+        'schema field' => 'status',
+        'required' => TRUE,
+        'label' => t('Status'),
+        'description' => t('Status'),
+        'setter callback' => 'entity_property_verbatim_set',
+      )
+    )
+  );
+
+  return $info;
+}
+
+function phone_send_phone_send_service() {
+  $services = variable_get('phone_send_services', array());
+  return $services;
+}
+
+function phone_send_service($sid = NULL) {
+  $services = &drupal_static(__FUNCTION__, NULL);
+  if (is_null($services)) {
+    $services = module_invoke_all('phone_send_service');
+    drupal_alter('phone_send_service', $services);
+    foreach ($services as &$sevice) {
+      $sevice = array_merge(phone_send_service_default(), $sevice);
+    }
+  }
+  if (!empty($sid)) {
+    return empty($services[$sid]) ? FALSE : $services[$sid];
+  }
+  return $services;
+}
+
+function phone_send_service_names() {
+  $services = phone_send_service();
+  $data = array();
+  foreach ($services as $key => $val) {
+    $data[$key] = $val['title'];
+  }
+  return $data;
+}
+
+function phone_send_service_default() {
+  return array(
+    'title' => '',
+    'verify' => '',
+    'url' => '',
+    'method' => 'get',
+    'oauth' => array(
+      'curlopts' => array(),
+      'parameters' => array(),
+      'data' => array(),
+    ),
+    'result' => array(
+      'format' => 'html',
+      'success' => 'success'
+    )
+  );
+}
+
+function phone_send_cron() {
+  
+}
+
+/**
+ * Implements hook_permission().
+ */
+function phone_send_permission() {
+  $perms = array(
+    'phone send settings' => array(
+      'title' => t('phone send settings'),
+      'description' => t('phone send settings'),
+      'restrict access' => TRUE,
+    ),
+    'phone send message' => array(
+      'title' => t('phone send message'),
+      'description' => t('phone send message'),
+      'restrict access' => TRUE,
+    ),
+    'administer phone send' => array(
+      'title' => t('administer phone send'),
+      'description' => t('administer phone send message record'),
+      'restrict access' => TRUE,
+    )
+  );
+  return $perms;
+}
+
+function _phone_send_class($sid = NULL) {
+  $classes = &drupal_static(__FUNCTION__, array());
+  if (empty($sid)) {
+    $sid = variable_get('phone_send_service_default');
+  }
+  if (!array_key_exists($sid, $classes)) {
+    $service = phone_send_service($sid);
+    $classes[$sid] = new PhoneSend($service);
+  }
+  return $classes[$sid];
+}
