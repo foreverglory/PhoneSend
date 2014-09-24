@@ -1,13 +1,13 @@
 name = Phone Send
 description = phone send code
-package = Iyoyo
+package = Phone Send
 dependencies[] = http_client
 dependencies[] = entity
 files[] = includes/PhoneSendRecordEntity.inc
 files[] = includes/PhoneSendRecordController.inc
 files[] = includes/PhoneSend.inc
 files[] = includes/PhoneSendOAuth.inc
-configure = admin/config/system/phone-send
+configure = admin/config/services/phone-send
 
 core = 7.x
 version = 7.x-1.0

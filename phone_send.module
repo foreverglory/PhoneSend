@@ -2,7 +2,7 @@
 
 function phone_send_menu() {
   $menus = array();
-  $menus['admin/config/system/phone-send'] = array(
+  $menus['admin/config/services/phone-send'] = array(
     'title' => t('Phone Send Settings'),
     'description' => t('Settings the Phone Send'),
     'page callback' => 'drupal_get_form',
@@ -10,11 +10,11 @@ function phone_send_menu() {
     'access arguments' => array('phone send settings'),
     'file' => 'phone_send.admin.inc',
   );
-  $menus['admin/config/system/phone-send/%phone_send_service'] = array(
+  $menus['admin/config/system/phone-send/form/%'] = array(
     'title' => t('Phone Send Settings '),
     'description' => t('Settings the Phone Send'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('phone_send_service_settings'),
+    'page arguments' => array('phone_send_settings_form', 1),
     'access arguments' => array('phone send settings'),
     'file' => 'phone_send.admin.inc',
   );

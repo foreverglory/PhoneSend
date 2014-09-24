@@ -15,14 +15,42 @@ function phone_send_curl_opt_string($defined = NULL) {
   return empty($defineds[$defined]) ? FALSE : $defineds[$defined];
 }
 
+function _phone_send_setting_options($name = Null, $service = array()) {
+  $form = array();
+  $form[$name] = array(
+    '#parents' => array('phone_send_service'),
+    '#type' => 'fieldset',
+    '#title' => is_null($name) ? t('Add') : $service['title'],
+    '#group' => 'settings',
+    'options' => array(
+      'title' => array(
+        '#parents' => array('phone_send_service', $name, 'title'),
+        '#title' => t('title'),
+        '#type' => 'textfield',
+        '#default_value' => $service['title']
+      ),
+      'machine_name' => array(
+        '#type' => 'machine_name',
+        '#default_value' => $name,
+        '#machine_name' => array(
+          'exists' => 'title',
+          'replace_pattern' => '[^a-z0-9-]+',
+          'replace' => '-',
+        ),
+        '#disabled' => !empty($service['title']),
+      )
+    )
+  );
+  return $form;
+}
+
 function phone_send_settings($form, &$form_state) {
   $form['phone_send_service_add'] = array(
     '#type' => 'button',
     '#value' => t('Add Phone Send Service')
   );
   $header = array(
-    'machine_name' => t('machine_name'),
-    'title' => t('Title'),
+    'title' => array('data' => t('Title')),
     'url' => t('Url'),
     'method' => t('Method'),
     'oauth' => t('oAuth'),
@@ -32,24 +60,16 @@ function phone_send_settings($form, &$form_state) {
   $options = array();
   foreach (phone_send_phone_send_service() as $name => $service) {
     $options[$name] = array(
-      'machine_name' => $name,
       'title' => $service['title'],
       'url' => $service['url'],
       'method' => $service['method'],
-      'oauth' => t('oAuth'),
-      'result' => t('Result'),
+      'oauth' => var_export($service['oauth'], true),
+      'result' => var_export($service['result'], true),
       'op' => array(
         'data' => array(
-          array(
-            '#type' => 'link',
-            '#title' => '编辑',
-            '#href' => 'admin'
-          ),
-          array(
-            '#type' => 'link',
-            '#title' => '删除',
-            '#href' => 'admin'
-          )
+          '#type' => 'link',
+          '#title' => '编辑',
+          '#href' => 'admin/config/system/phone-send/form/' . $name
         )
       )
     );
@@ -60,10 +80,18 @@ function phone_send_settings($form, &$form_state) {
     '#options' => $options,
     '#empty' => t('No content available.'),
   );
+  $form['actions']['delete'] = array(
+    '#type' => 'button',
+    '#value' => t('delete selected')
+  );
   return system_settings_form($form);
 }
 
-function phone_send_service_settings($form, &$form_state) {
+function phone_send_settings_validate($form, &$form_state) {
+  
+}
+
+function phone_send_settings_form($form, &$form_state) {
   $form['title'] = array(
     ''
   );
